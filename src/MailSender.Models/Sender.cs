@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Text;
 
 namespace MailSender.Models
 {
@@ -50,19 +46,23 @@ namespace MailSender.Models
                         .EnableSsl(true)
                         .Credentials(_fromCredentials[0], _fromCredentials[1])
                         .Build();
-                    smtpSender.SendCompleted += (sender, e) => 
-                        Invoke(SenderNotify, "Send complete");
-
+                    
                     smtpSender.Send(message);
+
+                    Invoke(SenderNotify, "Send complete");
                 }
+            }
+            catch(System.IO.FileNotFoundException ex)
+            {
+                Invoke(SenderNotify, "Error : " + ex.Message);
             }
             catch (SmtpException ex)
             {
                 Invoke(SenderNotify, "Error : " + ex.Message);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
-                Invoke(SenderNotify, "Error : Connection timeout");
+                Invoke(SenderNotify, "Error : " + ex.Message);
             }
 
         }

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-using NDesk;
 using NDesk.Options;
 
 using MailSender.Models;
@@ -12,22 +9,6 @@ namespace MailSender.UI.ConsoleApp
 {
     sealed class Program
     {
-        // ?? enum ??
-        private static  string[] ARGUMENT_KEYS_REQUIRED = new string[]
-        {
-            "host",
-            "port", 
-            "from",
-            "to"
-        };
-
-        private static string[] ARGUMENT_KEYS_OPTIONAL = new string[]
-        {
-            "sub",
-            "body", 
-            "attach"
-        };
-
         static Dictionary<string, List<string>> ParseArguments(string[] args)
         {
             Dictionary<string, List<string>> parameters = new Dictionary<string, List<string>>();
@@ -38,15 +19,15 @@ namespace MailSender.UI.ConsoleApp
 
                 OptionSet set = new OptionSet()
                 {
-                    { "host",       v => currentParameter = "host" },
-                    { "port",       v => currentParameter = "port" },
-                    { "from",       v => currentParameter = "from" },
-                    { "sub",        v => currentParameter = "sub" },
-                    { "body",       v => currentParameter = "body" },
-                    { "attach",     v => currentParameter = "attach" },
-                    { "to",         v => currentParameter = "to" },
-                    { "<>",         v => {
-
+                    { Constants.Parameters.HOST,        v => currentParameter = Constants.Parameters.HOST },
+                    { Constants.Parameters.PORT,        v => currentParameter = Constants.Parameters.PORT },
+                    { Constants.Parameters.FROM,        v => currentParameter = Constants.Parameters.FROM },
+                    { Constants.Parameters.SUBJECT,     v => currentParameter = Constants.Parameters.SUBJECT },
+                    { Constants.Parameters.BODY,        v => currentParameter = Constants.Parameters.BODY },
+                    { Constants.Parameters.ATTACHMENTS, v => currentParameter = Constants.Parameters.ATTACHMENTS },
+                    { Constants.Parameters.TO,          v => currentParameter = Constants.Parameters.TO },
+                    { "<>", v => 
+                        {
                             List<string> values;
                             if (parameters.TryGetValue(currentParameter, out values))
                             {
@@ -57,28 +38,30 @@ namespace MailSender.UI.ConsoleApp
                                 values = new List<string> { v };
                                 parameters.Add(currentParameter, values);
                             }
-
                         }
                     }
                 };
 
                 set.Parse(args);
             }
-            catch
+            catch(OptionException ex)
             {
-
+                Console.WriteLine("Arguments parse error : " + ex.Message);
             }
 
             return parameters;
         }
 
-        static bool[] CheckParameters(IDictionary<string, List<string>> parameters, string[] keysToCheck)
+        static bool CheckParameters(IDictionary<string, List<string>> parameters, string[] keysToCheck)
         {
-            var checkResult = new bool[keysToCheck.Length];
+            var checkResult = true;
             for (var i = 0; i < keysToCheck.Length; ++i)
             {
-                if (parameters.ContainsKey(keysToCheck[i]))
-                    checkResult[i] = true;
+                if (!parameters.ContainsKey(keysToCheck[i]) || parameters[keysToCheck[i]][0] == string.Empty)
+                {
+                    checkResult = false;
+                    Console.WriteLine("Miss parameter : " + keysToCheck[i]);
+                }
             }
 
             return checkResult;
@@ -89,7 +72,7 @@ namespace MailSender.UI.ConsoleApp
             #if DEBUG
             args = new string[15];
             args[0] = "-host";
-            args[1] =  "smtp.mail.ru";
+            args[1] = "smtp.mail.ru";
             args[2] = "-port";
             args[3] = "25";
             args[4] = "-from";
@@ -100,39 +83,42 @@ namespace MailSender.UI.ConsoleApp
             args[9] = "-sub";
             args[10] = "test subject";
             args[11] = "-body";
-            args[12] = "test body text";
+            args[12] = "";//"test body text";
             args[13] = "-attach";
-            args[14] = @"C:\test\connectionStrings.txt";
+            args[14] = @"C:\test\connectionStrings1.txt";
             #endif
 
-            var parameters = ParseArguments(args);
-            var requiredCheck = CheckParameters(parameters, ARGUMENT_KEYS_REQUIRED);
-
-            // check important fields
-            for (var i = 0; i < requiredCheck.Length; ++i)
+            var requiredParameters = new string[]
             {
-                if (!requiredCheck[i])
-                    Console.WriteLine("Miss parameter : " + ARGUMENT_KEYS_REQUIRED[i]);
-            }
-            
-            var host = parameters["host"][0];
-            var port = int.Parse(parameters["port"][0]);
-            var from = parameters["from"];
-            var to = parameters["to"];
+                Constants.Parameters.HOST,
+                Constants.Parameters.PORT,
+                Constants.Parameters.FROM,
+                Constants.Parameters.TO,
+            };
+
+            var parameters = ParseArguments(args);
+            var requiredCheck = CheckParameters(parameters, requiredParameters);
+
+            if (!requiredCheck)
+                return;
+        
+            var host = parameters[Constants.Parameters.HOST][0];
+            var port = int.Parse(parameters[Constants.Parameters.PORT][0]);
+            var from = parameters[Constants.Parameters.FROM];
+            var to = parameters[Constants.Parameters.TO];
 
             Sender mailSender = new Sender(host, port, from.ToArray(), to.ToArray());
             mailSender.SenderNotify += (message) => { Console.WriteLine(message); };
 
-            var subject = (parameters.ContainsKey("sub")) ? 
-                parameters["sub"][0] : string.Empty;
+            var subject = (parameters.ContainsKey(Constants.Parameters.SUBJECT)) ?
+                parameters[Constants.Parameters.SUBJECT][0] : string.Empty;
 
-            var body = (parameters.ContainsKey("body")) ? 
-                parameters["body"][0] : string.Empty;
+            var body = (parameters.ContainsKey(Constants.Parameters.BODY)) ?
+                parameters[Constants.Parameters.BODY][0] : string.Empty;
 
-            var attachment = (parameters.ContainsKey("attach")) ? 
-                parameters["attach"][0] : string.Empty;
+            var attachment = (parameters.ContainsKey(Constants.Parameters.ATTACHMENTS)) ?
+                parameters[Constants.Parameters.ATTACHMENTS][0] : string.Empty;
 
-          
             mailSender.Send(subject, body, attachment);
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using System.Net.Mail;
+using System.Text;
 
 namespace MailSender.Models
 {
@@ -48,8 +48,16 @@ namespace MailSender.Models
 
         public MailMessageBuilder Attachment(string fileName, string mediaType)
         {
-            _mailMessage.Attachments.Add(new System.Net.Mail.Attachment(fileName, mediaType));
-            return this;
+            try
+            {
+                if (fileName != string.Empty)
+                    _mailMessage.Attachments.Add(new System.Net.Mail.Attachment(fileName, mediaType));
+                return this;
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                throw;
+            }
         }
 
         public MailMessage Build()
