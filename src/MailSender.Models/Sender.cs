@@ -28,7 +28,7 @@ namespace MailSender.Models
                 action.Invoke(obj);
         }
 
-        public void Send(string subject, string body, string attachment)
+        public void Send(string subject, string body, string[] attachment)
         {
             try
             {

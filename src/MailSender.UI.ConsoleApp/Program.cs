@@ -70,7 +70,7 @@ namespace MailSender.UI.ConsoleApp
         static void Main(string[] args)
         {
             #if DEBUG
-            args = new string[15];
+            args = new string[17];
             args[0] = "-host";
             args[1] = "smtp.mail.ru";
             args[2] = "-port";
@@ -85,7 +85,9 @@ namespace MailSender.UI.ConsoleApp
             args[11] = "-body";
             args[12] = "";//"test body text";
             args[13] = "-attach";
-            args[14] = @"C:\test\connectionStrings1.txt";
+            args[14] = @"C:\test\connectionStrings.txt";
+            args[15] = @"C:\test\connectionStrings.txt";
+            args[16] = @"C:\test\connectionStrings.txt";
             #endif
 
             var requiredParameters = new string[]
@@ -117,9 +119,9 @@ namespace MailSender.UI.ConsoleApp
                 parameters[Constants.Parameters.BODY][0] : string.Empty;
 
             var attachment = (parameters.ContainsKey(Constants.Parameters.ATTACHMENTS)) ?
-                parameters[Constants.Parameters.ATTACHMENTS][0] : string.Empty;
+                parameters[Constants.Parameters.ATTACHMENTS] : new List<string>() { string.Empty };
 
-            mailSender.Send(subject, body, attachment);
+            mailSender.Send(subject, body, attachment.ToArray());
         }
     }
 }

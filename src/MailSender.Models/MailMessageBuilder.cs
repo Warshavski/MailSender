@@ -60,6 +60,24 @@ namespace MailSender.Models
             }
         }
 
+        public MailMessageBuilder Attachment(IEnumerable<string> filesNames, string mediaType)
+        {
+            try
+            {
+                foreach (var item in filesNames)
+                {
+                    if (item != string.Empty)
+                        _mailMessage.Attachments.Add(new System.Net.Mail.Attachment(item, mediaType));
+                }
+                
+                return this;
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                throw;
+            }
+        }
+
         public MailMessage Build()
         {
             return _mailMessage;
