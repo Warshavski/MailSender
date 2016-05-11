@@ -1,2 +1,2 @@
 # MailSender
-simple application for sending mail
+C#. Simple application for sending mail.
