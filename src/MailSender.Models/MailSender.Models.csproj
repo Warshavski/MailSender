@@ -40,6 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\MailAttachmentException.cs" />
+    <Compile Include="Exceptions\MailSenderConfigurationException.cs" />
+    <Compile Include="Exceptions\MailSenderException.cs" />
+    <Compile Include="ISender.cs" />
     <Compile Include="MailMessageBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sender.cs" />

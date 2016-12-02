@@ -85,7 +85,7 @@ namespace MailSender.UI.ConsoleApp
             args[11] = "-body";
             args[12] = "";//"test body text";
             args[13] = "-attach";
-            args[14] = @"C:\test\connectionStrings.txt";
+            args[14] = @"C:\test\wat test\connectionStrings.txt";
             args[15] = @"C:\test\connectionStrings.txt";
             args[16] = @"C:\test\connectionStrings.txt";
             #endif
@@ -109,19 +109,39 @@ namespace MailSender.UI.ConsoleApp
             var from = parameters[Constants.Parameters.FROM];
             var to = parameters[Constants.Parameters.TO];
 
-            Sender mailSender = new Sender(host, port, from.ToArray(), to.ToArray());
-            mailSender.SenderNotify += (message) => { Console.WriteLine(message); };
+            try
+            {
+                var mailSender = new Sender(host, port, from.ToArray(), to.ToArray());
+                //mailSender.SenderNotify += (message) => { Console.WriteLine(message); };
 
-            var subject = (parameters.ContainsKey(Constants.Parameters.SUBJECT)) ?
-                parameters[Constants.Parameters.SUBJECT][0] : string.Empty;
+                var subject = (parameters.ContainsKey(Constants.Parameters.SUBJECT)) ?
+                    parameters[Constants.Parameters.SUBJECT][0] : string.Empty;
 
-            var body = (parameters.ContainsKey(Constants.Parameters.BODY)) ?
-                parameters[Constants.Parameters.BODY][0] : string.Empty;
+                var body = (parameters.ContainsKey(Constants.Parameters.BODY)) ?
+                    parameters[Constants.Parameters.BODY][0] : string.Empty;
 
-            var attachment = (parameters.ContainsKey(Constants.Parameters.ATTACHMENTS)) ?
-                parameters[Constants.Parameters.ATTACHMENTS] : new List<string>() { string.Empty };
+                var attachment = (parameters.ContainsKey(Constants.Parameters.ATTACHMENTS)) ?
+                    parameters[Constants.Parameters.ATTACHMENTS] : new List<string>() { string.Empty };
 
-            mailSender.Send(subject, body, attachment.ToArray());
+                mailSender.Send(subject, body, attachment.ToArray());
+
+                Console.WriteLine("Send completed");
+            }
+            catch (MailSender.Models.Exceptions.MailSenderConfigurationException ex)
+            {
+                Console.WriteLine("Mail sender configuration error : {0}{1}",
+                    Environment.NewLine, ex.ToString());
+            }
+            catch (MailSender.Models.Exceptions.MailAttachmentException ex)
+            {
+                Console.WriteLine("Mail sender attachment error : {0}{1}",
+                    Environment.NewLine, ex.ToString());
+            }
+            catch (MailSender.Models.Exceptions.MailSenderException ex)
+            {
+                Console.WriteLine("Mail sender error : {0}{1}", 
+                    Environment.NewLine, ex.ToString());
+            }
         }
     }
 }
